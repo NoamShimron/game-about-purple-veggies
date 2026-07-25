@@ -6,13 +6,13 @@ eggplant={
 }
 const defaultStats={Ejaculations:0, goons_per_click:1};
 const defaultUpgrades =[
-  {name:"Chinese Kid",price:15, amount:0, gpm:0.1, img:"ching.jpg"}, 
-  {name:"Hooker", price:100, amount: 0, gpm:1, img:"zona.jpg"}, 
-  {name:"Pimp",price:1150, amount: 0, gpm:8,img:"pimp.jpg"},
-  {name:"Sex Toy Store", price:13000, amount: 0, gpm:90, img:"shop.jpg"}, 
+  {name:"enthusiastic midget",price:15, amount:0, gpm:0.1, img:"ching.jpg"}, 
+  {name:"cosplayer", price:100, amount: 0, gpm:1, img:"zona.jpg"}, 
+  {name:"business man",price:1150, amount: 0, gpm:8,img:"pimp.jpg"},
+  {name:"complex Toy Store", price:13000, amount: 0, gpm:90, img:"shop.jpg"}, 
   {name:"Ben Zini",price:150000, amount: 0, gpm:650,img:"zini.jpg"},
-  {name:"Yannai", price:1700000, amount: 0, gpm:55000, img:"yannai.jpg"}, 
-  {name:"Yair",price:20000000, amount: 0, gpm:4000000,img:"yair.jpg"}] ;
+  {name:"Yannaichuk", price:1700000, amount: 0, gpm:55000, img:"yannai.jpg"}, 
+  {name:"Yair boxes the united nations",price:20000000, amount: 0, gpm:4000000,img:"yair.jpg"}] ;
 const gps = document.querySelector('.gps');
 const upgradeContainer = document.querySelector('.upgrades');
 const countDisplay = document.querySelector('.points');
