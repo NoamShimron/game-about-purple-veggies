@@ -15,7 +15,7 @@ const defaultUpgrades = [
   { name: "Yannaichuk", price: 1700000, amount: 0, gpm: 55000, img: "yannai.jpg" },
   { name: "Yair boxes the united nations", price: 20000000, amount: 0, gpm: 4000000, img: "yair.jpg" }
 ];
-
+const global_info = { stats: defaultStats, upgrades: defaultUpgrades };
 const gps = document.querySelector('.gps');
 const upgradeContainer = document.querySelector('.upgrades');
 const countDisplay = document.querySelector('.points');
