@@ -91,7 +91,7 @@ setInterval(()=>{
 
 function updateCount() {
   countDisplay.innerText = `${Math.round(stats.Ejaculations)} `;
-  gps.innerText = `Ejaculations Per Second ${(Math.round(global_gpm*100)/100)}` 
+  gps.innerText = `Juicings Per Second ${(Math.round(global_gpm*100)/100)}` 
   sendToLocalStorage()
 
 
