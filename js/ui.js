@@ -14,6 +14,7 @@
     eggplantButton: document.querySelector(".eggplantButton"),
     resetButton: document.querySelector(".header-button"),
   };
+  G.ui.nextItemRevealCost = Infinity;
 
   G.ui.updateGlobalInfo = function () {
     G.global_info = {
@@ -32,7 +33,8 @@
     if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
     if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
     if (num >= 1e3) return (num / 1e3).toFixed(2) + "K";
-    return Math.floor(num).toString();
+    if (!Number.isFinite(num)) return "0";
+    return num % 1 === 0 ? num.toString() : num.toFixed(1);
   };
 
   G.ui.updateItemButtons = function () {
@@ -67,6 +69,14 @@
     });
 
     G.ui.elements.itemContainer.innerHTML = html;
+    const hiddenItems = G.items.filter(
+      (item) =>
+        !G.boughtItems.some((b) => b.name === item.name) &&
+        item.price > maxCost
+    );
+    G.ui.nextItemRevealCost = hiddenItems.length
+      ? Math.min(...hiddenItems.map((item) => item.price))
+      : Infinity;
 
     G.ui.elements.itemContainer.querySelectorAll(".item").forEach((button) => {
       const tooltip = button.querySelector(".item-tooltip");
@@ -276,7 +286,10 @@
       G.ui.updateRebirthButtons();
     }
     if (G.ui.elements.itemContainer) {
-      G.ui.updateItemButtons();
+      const maxCost = Math.max(100, G.stats.highestEver * 10);
+      if (maxCost >= G.ui.nextItemRevealCost) {
+        G.ui.updateItemButtons();
+      }
     }
     G.storage.saveState();
   };
