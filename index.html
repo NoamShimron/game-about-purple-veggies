@@ -1,334 +1,620 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
   <head>
-  <title>Eggplant Clicker</title>
- <style>
-
-    *{
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #2b2b2b;
-      color: #fff;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: row;
-      min-width: 0; /* No forced minimum width, so the page can shrink on mobile */
-      overflow-x: hidden;
-    }
-    html{
-      min-width: 0; /* No forced minimum width, so the page can shrink on mobile */
-    }
-    /* Header styling */
-    .header {
-      background-color: #444;
-      padding: 15px 20px;
-      text-align: center;
-      align-items: center;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 1000; /* Space for the header */
-    }
-    
-
-    .header-txt {
-      flex-grow: 1; /* Center the text */
-      font-size: clamp(20px, 5vw, 36px);
-      font-weight: bold;
-      color: #f4f4f4;
-    }
-
-    /* Counter styling */
-    .counter {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: center;
-      font-size: clamp(18px, 4vw, 24px);
-      margin-top: 20px;
-      
-     /* Push below the header */
-      font-weight: bold;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    }
-     
-    /* Eggplant container styling */
-    .eggplant-container {
-      margin: 20px auto;
-      width: min(200px, 45vw); /* Scales down on narrow screens */
-      height: min(200px, 45vw);
-      
-      align-items: center;
-    }
-
-    .eggplantButton {
-      background: none;
-      border: none;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-      padding: 0;
-      
-    }
-
-    .eggplant {
-      border-radius: 5%;
-      width: 100%;
-      height: 100%;
-      transition: transform 0.2s ease-in-out;
-    }
-    .counter-container {
-      align-items: center;
-      background-color: blueviolet;
-      flex: 0 0 auto;
-      width: 100%;
-      max-width: 300px;
-      padding-bottom: 20px;
-    }
-
-    .eggplant:hover {
-      transform: scale(1.1); /* Slightly enlarge on hover */
-    }
-
-    .eggplant:active {
-      transform: scale(0.9); /* Shrink slightly when clicked */
-    }
-    .items {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); /* Grid layout with responsive columns */
-    gap: 20px; /* Space between items */
-    margin-top: 30px;
-    text-align: center;
-    flex: 1 1 260px;
-    max-width: 520px; /* Maximum width to fit five items at 100px each with gaps */
-    }
-
-    .item {
-      background-color: #555;
-      text-align: center;
-      color: #fff;
-      border: 1px solid #777;
-      padding: 10px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      border-radius: 5px;
-      transition: background-color 0.2s;
-      position: relative; /* For positioning the text box */
-    }
-    .item:hover {
-      background-color: #666;
-    }
-
-    .item img {
-      width: 80%;
-      height: 80%;
-      object-fit: contain;
-    }
-
-    .item-title,
-    .item-cost {
-      display: none; /* Hide text by default */
-    }
-
-    .item:hover .item-title{
-      display: block; /* Show text on hover */
-      position: absolute; /* Position relative to the .item */
-      top: -10px; /* Position the textbox above the item */
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
-      color: #fff;
-      padding: 5px 10px;
-      border-radius: 5px;
-      white-space: nowrap; /* Prevent text wrapping */
-      z-index: 10; /* Ensure it appears above other elements */
-      font-size: 14px; /* Adjust font size for better readability */
-    }
-    .item:hover .item-cost {
-      display: block; /* Show text on hover */
-      position: absolute; /* Position relative to the .item */
-      top: -30px; /* Position the textbox above the item */
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
-      color: #fff;
-      padding: 5px 10px;
-      border-radius: 5px;
-      white-space: nowrap; /* Prevent text wrapping */
-      z-index: 10; /* Ensure it appears above other elements */
-      font-size: 14px; /* Adjust font size for better readability */
-    }
-    /* Upgrades section styling */
-    .upgrades {
-      margin-top: 30px;
-      text-align: left;
-      flex: 1 1 280px;
-      max-width: 400px;
-    }
-
-    .upgrade {
-      background-color: #555;
-      text-align: left;
-      color: #fff;
-      border: 1px solid #777;
-      padding: 10px;
-      padding-left: 16px;
-      margin: 10px 0;
-      width: 100%;
-      cursor: pointer;
-      display: block;
-      border-radius: 5px;
-      transition: background-color 0.2s;
-    }
-
-    .upgrade:hover {
-      background-color: #666;
-    }
-
-    .upgrade:disabled {
-      background-color: #333;
-      cursor: not-allowed;
-    }
-    .buttonimg {
-      width: 50px;
-      height: 50px;
-      margin-right: 10px;
-      vertical-align: middle;
-    }
-    .header-button {
-      background-color: #f44336; /* Red color for the reset button */
-      height: 40px;
-      
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-right: 20px; /* Space between button and text */
-    }
-    .insides {
-      margin-top: 150px;
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      vertical-align: top;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 20px;
-      width: 100%;
-      padding: 0 20px;
-       /* Full viewport height */
-       /* Space for the header */
-    }
-    
-    .gps{
-      display: flex;
-      justify-content: center;
-      font-size: clamp(14px, 3.5vw, 18px);
-      color: #ffffff;
-      margin-top: 10px;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);
-    }
-    .disabled{
-      background-color: #333333; /* Grey color for disabled text */
-      cursor: not-allowed; /* Change cursor to indicate disabled state */
-    }
-
-    /* Tablet and below: stack the three columns and let the header wrap */
-    @media (max-width: 900px) {
-      .insides {
-        margin-top: 170px;
-        justify-content: center;
+    <title>Eggplant Clicker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-      .items,
-      .upgrades {
-        max-width: 480px;
-      }
-    }
 
-    /* Phones: single column, full-width panels, smaller header button */
-    @media (max-width: 600px) {
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #fff;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* Header */
       .header {
-        padding: 10px;
+        background: linear-gradient(90deg, #0f3460 0%, #16213e 100%);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        flex-wrap: wrap;
       }
+
+      .header-txt {
+        font-size: clamp(1.5rem, 5vw, 2.5rem);
+        font-weight: 700;
+        letter-spacing: 1px;
+        background: linear-gradient(135deg, #e91e63, #ffc107);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        flex: 1;
+        min-width: 200px;
+        text-align: center;
+      }
+
       .header-button {
-        height: 34px;
-        padding: 8px 14px;
-        font-size: 14px;
-        margin-right: 0;
+        background: linear-gradient(135deg, #e91e63, #ff1744);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
       }
+
+      .header-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4);
+      }
+
+      .header-button:active {
+        transform: translateY(0);
+      }
+
+      /* Main content area */
       .insides {
-        margin-top: 190px;
+        margin-top: 120px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        padding: 2rem;
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* Counter section */
+      .counter-container {
+        background: linear-gradient(135deg, rgba(233, 30, 99, 0.1), rgba(255, 193, 7, 0.1));
+        border: 2px solid rgba(233, 30, 99, 0.3);
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 0 12px;
+        justify-content: center;
+        grid-column: 1 / -1;
       }
-      .counter-container,
-      .items,
-      .upgrades {
-        max-width: 100%;
+
+      .counter {
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        align-items: baseline;
+        flex-wrap: wrap;
+      }
+
+      .points {
+        background: linear-gradient(135deg, #ffc107, #ffeb3b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: clamp(2rem, 6vw, 3.5rem);
+        font-weight: 800;
+      }
+
+      .gps {
+        font-size: clamp(1rem, 2.5vw, 1.25rem);
+        color: #81c784;
+        font-weight: 600;
+        margin-bottom: 2rem;
+      }
+
+      /* Eggplant button */
+      .eggplant-container {
+        position: relative;
+        width: min(220px, 60vw);
+        height: min(220px, 60vw);
+        margin: 0 auto;
+      }
+
+      .eggplantButton {
         width: 100%;
+        height: 100%;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        position: relative;
+        filter: drop-shadow(0 10px 25px rgba(233, 30, 99, 0.3));
+        transition: filter 0.2s ease;
       }
-      .items {
-        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-        gap: 12px;
+
+      .eggplantButton:hover {
+        filter: drop-shadow(0 15px 35px rgba(233, 30, 99, 0.5));
       }
+
+      .eggplant {
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+        image-rendering: crisp-edges;
+      }
+
+      .eggplantButton:active .eggplant {
+        transform: scale(0.92);
+      }
+
+      /* Upgrades section */
+      .upgrades {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        max-height: 600px;
+        overflow-y: auto;
+      }
+
+      .upgrades::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .upgrades::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+      }
+
+      .upgrades::-webkit-scrollbar-thumb {
+        background: rgba(233, 30, 99, 0.3);
+        border-radius: 10px;
+      }
+
+      .upgrades::-webkit-scrollbar-thumb:hover {
+        background: rgba(233, 30, 99, 0.5);
+      }
+
       .upgrade {
-        margin: 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: linear-gradient(135deg, rgba(129, 199, 132, 0.1), rgba(76, 175, 80, 0.1));
+        border: 2px solid rgba(76, 175, 80, 0.3);
+        padding: 1rem;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+        position: relative;
+        overflow: hidden;
+        will-change: transform;
+        transform: translateX(0);
       }
+
+      .upgrade::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left 0.5s ease;
+      }
+
+      .upgrade:hover::before {
+        left: 100%;
+      }
+
+      .upgrade:hover:not(.disabled) {
+        background: linear-gradient(135deg, rgba(129, 199, 132, 0.2), rgba(76, 175, 80, 0.2));
+        border-color: rgba(76, 175, 80, 0.6);
+        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+      }
+
+      .upgrade.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        border-color: rgba(76, 175, 80, 0.1);
+      }
+
+      .upgrade-denied {
+        animation: denied-flash 0.4s ease both;
+      }
+
+      @keyframes denied-flash {
+        0%, 100% {
+          border-color: rgba(255, 107, 107, 0.8);
+          box-shadow: 0 0 0 rgba(255, 107, 107, 0);
+        }
+        50% {
+          border-color: rgba(255, 107, 107, 1);
+          box-shadow: 0 0 18px rgba(255, 107, 107, 0.45);
+        }
+      }
+
       .buttonimg {
-        width: 40px;
-        height: 40px;
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        flex-shrink: 0;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 4px;
       }
-    }
-    </style> 
-      
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
-  <!-- Header Section -->
-  <div class="header">
-    <button class="header-button"  >Reset</button>
-    <p class="header-txt">Eggplant Clicker</p>
-    
-  </div>
-  <div class="insides">
-    <!-- Counter Section -->
-    <div class="counter-container">
-      <div class="counter">
-        Ejaculations: <span class="points">0</span>
-        
+
+      .upgrade-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        flex: 1;
+        min-width: 0;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 0.75rem;
+        border-radius: 8px;
+      }
+
+      .upgrade-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .upgrade-cost {
+        font-size: 0.85rem;
+        color: #fff;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      }
+
+      .upgrade-GPM {
+        font-size: 0.85rem;
+        color: #ffeb3b;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      }
+
+      .upgrade-count {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #81c784, #66bb6a);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        min-width: 3rem;
+        text-align: right;
+      }
+
+      /* Items section */
+      .items {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 1.5rem;
+        max-height: 600px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .items::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .items::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+      }
+
+      .items::-webkit-scrollbar-thumb {
+        background: rgba(233, 30, 99, 0.3);
+        border-radius: 10px;
+      }
+
+      .items::-webkit-scrollbar-thumb:hover {
+        background: rgba(233, 30, 99, 0.5);
+      }
+
+      .item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+        border: 2px solid rgba(255, 193, 7, 0.3);
+        padding: 0.75rem;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: visible;
+        min-height: 140px;
+        height: 100%;
+        z-index: 1;
+      }
+
+
+      .item:hover {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2));
+        border-color: rgba(255, 193, 7, 0.6);
+        box-shadow: 0 6px 16px rgba(255, 193, 7, 0.22);
+        z-index: 2;
+      }
+
+      .item img {
+        width: 65px;
+        height: 65px;
+        object-fit: contain;
+        border-radius: 6px;
+        margin-bottom: 0.25rem;
+        flex-shrink: 0;
+      }
+
+      .item-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        text-align: center;
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.2;
+        max-width: 100%;
+      }
+
+      .item-cost {
+        display: block;
+        width: 100%;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #ffeb3b;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        text-align: center;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.2;
+      }
+
+      .item-tooltip {
+        display: block;
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        left: 50%;
+        transform: translateX(-50%) translateY(-0.25rem) scale(0.9);
+        opacity: 0;
+        pointer-events: none;
+        background: rgba(20, 20, 40, 0.95);
+        border: 2px solid rgba(255, 193, 7, 0.5);
+        border-radius: 10px;
+        padding: 0.75rem;
+        width: min(220px, calc(100% - 1rem));
+        max-width: 100%;
+        box-sizing: border-box;
+        z-index: 1000;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 193, 7, 0.2);
+        overflow: hidden;
+        word-break: break-word;
+      }
+
+      .item:hover .item-tooltip {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0) scale(1);
+      }
+
+      .tooltip-header {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #ffeb3b;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        margin-bottom: 0.5rem;
+        text-align: center;
+      }
+
+      .tooltip-description {
+        display: block;
+        font-size: 0.75rem;
+        color: #e0e0e0;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+        text-align: center;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .tooltip-price {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        text-align: center;
+        transition: color 0.15s ease;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      /* Responsive design */
+      @media (max-width: 1200px) {
+        .insides {
+          grid-template-columns: 1fr 1fr;
+          gap: 1.5rem;
+        }
+
+        .counter-container {
+          grid-column: 1 / -1;
+        }
+
+        .upgrades,
+        .items {
+          max-height: 400px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .header {
+          padding: 1rem;
+        }
+
+        .header-txt {
+          font-size: 1.5rem;
+          min-width: unset;
+        }
+
+        .header-button {
+          padding: 0.6rem 1.2rem;
+          font-size: 0.9rem;
+        }
+
+        .insides {
+          grid-template-columns: 1fr;
+          margin-top: 140px;
+          padding: 1rem;
+          gap: 1.5rem;
+        }
+
+        .counter-container {
+          grid-column: unset;
+        }
+
+        .eggplant-container {
+          width: min(180px, 80vw);
+          height: min(180px, 80vw);
+        }
+
+        .upgrades,
+        .items {
+          max-height: 350px;
+        }
+
+        .upgrade {
+          padding: 0.8rem;
+        }
+
+        .buttonimg {
+          width: 50px;
+          height: 50px;
+        }
+
+        .upgrade-title {
+          font-size: 0.9rem;
+        }
+
+        .items {
+          grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+          gap: 1rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header {
+          flex-direction: column;
+          gap: 0.75rem;
+          padding: 0.75rem;
+        }
+
+        .header-txt {
+          font-size: 1.25rem;
+          order: 2;
+        }
+
+        .header-button {
+          order: 1;
+          align-self: flex-start;
+          padding: 0.5rem 1rem;
+          font-size: 0.85rem;
+        }
+
+        .insides {
+          margin-top: 180px;
+          padding: 1rem 0.5rem;
+        }
+
+        .counter {
+          font-size: 1rem;
+          gap: 0.5rem;
+        }
+
+        .points {
+          font-size: 2rem;
+        }
+
+        .gps {
+          font-size: 1rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .eggplant-container {
+          width: min(150px, 70vw);
+          height: min(150px, 70vw);
+        }
+
+        .upgrade {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .upgrade-count {
+          text-align: center;
+          min-width: unset;
+        }
+
+        .items {
+          grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <button class="header-button">Reset</button>
+      <p class="header-txt">Eggplant Clicker</p>
+    </div>
+
+    <div class="insides">
+      <div class="counter-container">
+        <div class="counter">
+          Ejaculations: <span class="points">0</span>
+        </div>
+        <div class="gpsdiv">
+          <p class="gps">EPS: 0</p>
+        </div>
+        <div class="eggplant-container">
+          <button class="eggplantButton" id="eggplantButton">
+            <img class="eggplant" src="download-good.jpg" draggable="false" alt="Eggplant">
+          </button>
+        </div>
       </div>
-      <div class="gpsdiv">
-      <p class="gps">Ejaculations per second:</p></div>
-      <!-- Eggplant Button Section -->
-      <div class="eggplant-container">
-        <button class="eggplantButton" id="eggplantButton">
-          <img class="eggplant" src="download-good.jpg" draggable="false" alt="Eggplant">
-        </button>
-      </div>
+
+      <div class="upgrades js-upgrades"></div>
+      <div class="items js-items"></div>
     </div>
-    <!-- Upgrades Section -->
-    <div class="upgrades js-upgrades">
-    </div>
-    <div class="items js-items">
-    </div>
-  </div>
-  <script src="clicker.js"></script> <!-- Link to your JavaScript file -->
-</body>
+
+    <script src="js/data.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+  </body>
 </html>
