@@ -242,7 +242,7 @@ setInterval(()=>{
 },100);
 
 function updateCount() {
-  countDisplay.innerText = `${Math.round(stats.Ejaculations)} `;
+  countDisplay.innerText = `${Math.round(stats.Ejaculations*10)/10} `;
   gps.innerText = `Ejaculations Per Second ${(Math.round(global_gpm*100)/100)}` 
   sendToLocalStorage()
 
@@ -292,7 +292,7 @@ resetbutton.addEventListener('click', resetGame);
 
 // Function to handle clicks
 function addEjaculations(num){
-  stats.Ejaculations = Math.round((stats.Ejaculations + num)*10) / 10
+  stats.Ejaculations = Math.round((stats.Ejaculations + num)*100) / 100
 };
 
 function click_eggplant() {
