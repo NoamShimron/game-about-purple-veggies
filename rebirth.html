@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Eggplant Clicker - Rebirth</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #fff;
+        min-height: 100vh;
+      }
+
+      .header {
+        background: linear-gradient(90deg, #0f3460 0%, #16213e 100%);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .header-txt {
+        font-size: clamp(1.5rem, 5vw, 2rem);
+        font-weight: 700;
+        letter-spacing: 1px;
+        background: linear-gradient(135deg, #e91e63, #ffc107);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .header-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #42a5f5, #1e88e5);
+        color: white;
+        text-decoration: none;
+        padding: 0.75rem 1.2rem;
+        border-radius: 10px;
+        font-weight: 700;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .header-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(30, 136, 229, 0.3);
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(10px);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin-bottom: 1rem;
+      }
+
+      p,
+      li {
+        line-height: 1.7;
+        margin-bottom: 0.85rem;
+      }
+
+      ul {
+        padding-left: 1.2rem;
+        margin-bottom: 1rem;
+      }
+
+      .note {
+        color: #f8f38d;
+      }
+
+      .insides {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 1rem 2rem;
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .rebirth-header {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 18px;
+      }
+
+      .rebirth-header h1 {
+        font-size: clamp(1.5rem, 4vw, 2rem);
+      }
+
+      .rebirth-status {
+        color: #f8f38d;
+        font-weight: 700;
+        line-height: 1.5;
+      }
+
+      .next-rebirth {
+        color: #b2ebf2;
+        font-size: 0.95rem;
+      }
+
+      .rebirth .upgrade {
+        padding: 1.2rem 1rem;
+        min-height: 120px;
+        border-radius: 14px;
+        background: rgba(66, 133, 244, 0.08);
+        border: 1px solid rgba(66, 133, 244, 0.2);
+      }
+
+      .rebirth .upgrade:hover {
+        background: rgba(66, 133, 244, 0.14);
+      }
+
+      .rebirth .upgrade-info {
+        background: transparent;
+        padding: 0;
+      }
+
+      .rebirth .upgrade-description {
+        color: #cfd8dc;
+      }
+
+      .rebirth-button {
+        background: linear-gradient(135deg, #42a5f5, #1e88e5);
+        color: white;
+        border: none;
+        padding: 0.9rem 1.25rem;
+        font-size: 1rem;
+        font-weight: 700;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 7px 18px rgba(30, 136, 229, 0.25);
+        width: fit-content;
+      }
+
+      .rebirth-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 9px 20px rgba(30, 136, 229, 0.35);
+      }
+
+      .rebirth-button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .rebirth {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        max-height: 600px;
+        overflow-y: auto;
+      }
+
+      .upgrade-description {
+        color: #d7d7ff;
+        font-size: 0.9rem;
+        margin-top: 0.35rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <p class="header-txt">Eggplant Clicker Rebirth</p>
+      <a href="index.html" class="header-link">Back to Game</a>
+    </div>
+
+    <div class="insides">
+      <div class="rebirth-header card">
+        <h1>Rebirth</h1>
+        <p>Spend Rebirth Points on permanent bonuses that affect future runs. Rebirth resets your normal progress while keeping rebirth upgrades and progress toward the next point.</p>
+        <p class="rebirth-status">
+          Rebirth Points: <span class="rebirth-count">0</span>
+        </p>
+        <p class="next-rebirth">
+          Next rebirth at <span class="next-rebirth-value">0</span> ejaculations.
+        </p>
+        <button class="rebirth-button">Rebirth</button>
+      </div>
+
+      <div class="rebirth js-rebirth"></div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

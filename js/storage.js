@@ -18,6 +18,8 @@
       stats: G.stats,
       upgrades: G.upgrades,
       boughtItems: G.boughtItems,
+      rebirthUpgrades: G.rebirthUpgrades,
+      highestEver: G.stats.highestEver,
     };
     localStorage.setItem("global info", JSON.stringify(state));
   };
@@ -27,6 +29,9 @@
     G.upgrades.forEach((upgrade) => {
       temp_gpm += upgrade.gpm * upgrade.amount;
     });
+    if (typeof G.getRebirthGpmMultiplier === "function") {
+      temp_gpm *= G.getRebirthGpmMultiplier();
+    }
     return temp_gpm;
   };
 })(Game);

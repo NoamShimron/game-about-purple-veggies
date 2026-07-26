@@ -3,8 +3,71 @@ var Game = window.Game || {};
 (function (G) {
   G.itemType = {
     double: "double",
-    perClick: "perClick",
-    price: "price",
+    perUpgrade: "perUpgrade",
+    gpmToClick: "gpmToClick",
+  };
+
+  G.getOwnedUpgradeCount = function () {
+    return G.upgrades.reduce((sum, upgrade) => sum + (upgrade.amount || 0), 0);
+  };
+
+  G.getRebirthGpmMultiplier = function () {
+    return (
+      1 +
+      G.rebirthUpgrades.reduce(
+        (sum, upgrade) =>
+          sum + (upgrade.type === "gpm" ? upgrade.amount * upgrade.effect : 0),
+        0
+      )
+    );
+  };
+
+  G.getRebirthClickMultiplier = function () {
+    return (
+      1 +
+      G.rebirthUpgrades.reduce(
+        (sum, upgrade) =>
+          sum + (upgrade.type === "click" ? upgrade.amount * upgrade.effect : 0),
+        0
+      )
+    );
+  };
+
+  G.getRebirthClickPerUpgrade = function () {
+    return G.rebirthUpgrades.reduce(
+      (sum, upgrade) =>
+        sum + (upgrade.type === "upgradeClick" ? upgrade.amount * upgrade.effect : 0),
+      0
+    );
+  };
+
+  G.getRebirthGpmToClick = function () {
+    return G.rebirthUpgrades.reduce(
+      (sum, upgrade) =>
+        sum + (upgrade.type === "gpmToClick" ? upgrade.amount * upgrade.effect : 0),
+      0
+    );
+  };
+
+  G.getRebirthPoints = function () {
+    return Math.max(0, Math.floor(Math.sqrt(G.stats.highestEver / 100000)));
+  };
+
+  G.getClickValue = function () {
+    const baseClick =
+      G.stats.goons_per_click +
+      G.stats.upgradeClickBonus * G.getOwnedUpgradeCount() +
+      G.getOwnedUpgradeCount() * G.getRebirthClickPerUpgrade();
+    const gpmBonus = G.stats.gpmClickPercent * G.global_gpm;
+    const rebirthGpmClick = G.global_gpm * G.getRebirthGpmToClick();
+    return Math.max(
+      1,
+      Math.round(
+        (baseClick + gpmBonus + rebirthGpmClick) *
+          G.getRebirthClickMultiplier() *
+          100
+      ) / 100
+    );
   };
 
   class Item {
@@ -21,12 +84,11 @@ var Game = window.Game || {};
     getDescription() {
       switch (this.type) {
         case G.itemType.double:
-          return `Doubles the earnings per second of ${this.whichUpgrade}`;
-        case G.itemType.perClick:
-          return `Increases earnings per click by ${this.modifier} per ${this.whichUpgrade}`;
-        case G.itemType.price:
-          const discount = Math.round((1 - this.modifier) * 100);
-          return `Reduces ${this.whichUpgrade} cost by ${discount}%`;
+          return `Multiplies the earnings per second of ${this.whichUpgrade} by ${this.modifier}x.`;
+        case G.itemType.perUpgrade:
+          return `Each upgrade you own now adds ${this.modifier} extra click.`;
+        case G.itemType.gpmToClick:
+          return `Adds ${Math.round(this.modifier * 100)}% of your current GPM to each click.`;
         default:
           return "Upgrade your earnings";
       }
@@ -34,17 +96,17 @@ var Game = window.Game || {};
 
     applyItemEffect() {
       const upgrade = G.upgrades.find((u) => u.name === this.whichUpgrade);
-      if (!upgrade) return;
 
       switch (this.type) {
         case G.itemType.double:
+          if (!upgrade) return;
           upgrade.gpm *= this.modifier;
           break;
-        case G.itemType.perClick:
-          G.stats.goons_per_click += upgrade.amount * this.modifier;
+        case G.itemType.perUpgrade:
+          G.stats.upgradeClickBonus += this.modifier;
           break;
-        case G.itemType.price:
-          upgrade.price = Math.floor(upgrade.price * this.modifier);
+        case G.itemType.gpmToClick:
+          G.stats.gpmClickPercent += this.modifier;
           break;
       }
 
@@ -60,57 +122,148 @@ var Game = window.Game || {};
   G.Item = Item;
 
   // Default data
-  G.defaultStats = { Ejaculations: 0, goons_per_click: 1 };
-  G.defaultUpgrades = [
-    { name: "Chinese Kid", price: 15, amount: 0, gpm: 0.5, img: "ching.jpg" },
-    { name: "Hooker", price: 100, amount: 0, gpm: 5, img: "zona.jpg" },
-    { name: "Pimp", price: 1150, amount: 0, gpm: 40, img: "pimp.jpg" },
-    { name: "Sex Toy Store", price: 13000, amount: 0, gpm: 450, img: "shop.jpg" },
-    { name: "Ben Zini", price: 150000, amount: 0, gpm: 3250, img: "zini.jpg" },
-    { name: "Yannai", price: 1700000, amount: 0, gpm: 55000, img: "yannai.jpg" },
-    { name: "Yair", price: 20000000, amount: 0, gpm: 400000, img: "yair.jpg" },
+  G.defaultStats = {
+    Ejaculations: 0,
+    goons_per_click: 1,
+    highestEver: 0,
+    rebirthPoints: 0,
+    rebirthPointsTotal: 0,
+    totalRebirths: 0,
+    upgradeClickBonus: 0,
+    gpmClickPercent: 0,
+  };
+
+  G.defaultRebirthUpgrades = [
+    {
+      name: "Soul Resonance",
+      price: 2,
+      amount: 0,
+      type: "gpm",
+      effect: 0.1,
+      description: "All GPM is increased by 10%.",
+    },
+    {
+      name: "Stellar Insight",
+      price: 4,
+      amount: 0,
+      type: "click",
+      effect: 0.1,
+      description: "Clicks are 10% stronger.",
+    },
+    {
+      name: "Ascension Beacon",
+      price: 8,
+      amount: 0,
+      type: "gpmToClick",
+      effect: 0.01,
+      description: "Add 1% of your GPM to each click.",
+    },
+    {
+      name: "Fundamental Echo",
+      price: 12,
+      amount: 0,
+      type: "upgradeClick",
+      effect: 0.5,
+      description: "Each owned upgrade adds +0.5 click.",
+    },
+    {
+      name: "Quantum Archive",
+      price: 20,
+      amount: 0,
+      type: "gpm",
+      effect: 0.25,
+      description: "All GPM is increased by 25%.",
+    },
   ];
 
-  G.defaultItems = [
-    { name: "ching gps doubled", price: 100, type: G.itemType.double, img: "ching.jpg", modifier: 2, whichUpgrade: "Chinese Kid" },
-    { name: "golden ching gps doubled", price: 5000, type: G.itemType.double, img: "ching.jpg", modifier: 2, whichUpgrade: "Chinese Kid" },
-    { name: "hooker gps doubled", price: 700, type: G.itemType.double, img: "zona.jpg", modifier: 2, whichUpgrade: "Hooker" },
-    { name: "golden hooker gps doubled", price: 35000, type: G.itemType.double, img: "zona.jpg", modifier: 2, whichUpgrade: "Hooker" },
-    { name: "gpc increased per ching", price: 3000, type: G.itemType.perClick, img: "ching.jpg", modifier: 1, whichUpgrade: "Chinese Kid" },
-    { name: "golden gpc increased per ching", price: 150000, type: G.itemType.perClick, img: "ching.jpg", modifier: 0.5, whichUpgrade: "Chinese Kid" },
-    { name: "pimp gps doubled", price: 10000, type: G.itemType.double, img: "pimp.jpg", modifier: 2, whichUpgrade: "Pimp" },
-    { name: "golden pimp gps doubled", price: 500000, type: G.itemType.double, img: "pimp.jpg", modifier: 2, whichUpgrade: "Pimp" },
-    { name: "gpc increased per hooker", price: 15000, type: G.itemType.perClick, img: "zona.jpg", modifier: 0.5, whichUpgrade: "Pimp" },
-    { name: "golden gpc increased per hooker", price: 750000, type: G.itemType.perClick, img: "zona.jpg", modifier: 0.5, whichUpgrade: "Pimp" },
-    { name: "gpc increased per pimp", price: 100000, type: G.itemType.perClick, img: "pimp.jpg", modifier: 1, whichUpgrade: "Pimp" },
-    { name: "golden gpc increased per pimp", price: 5000000, type: G.itemType.perClick, img: "pimp.jpg", modifier: 1, whichUpgrade: "Pimp" },
-    { name: "shop gps doubled", price: 120000, type: G.itemType.double, img: "shop.jpg", modifier: 2, whichUpgrade: "Sex Toy Store" },
-    { name: "golden shop gps doubled", price: 6000000, type: G.itemType.double, img: "shop.jpg", modifier: 2, whichUpgrade: "Sex Toy Store" },
-    { name: "gpc increased per shop", price: 150000, type: G.itemType.perClick, img: "shop.jpg", modifier: 2, whichUpgrade: "Sex Toy Store" },
-    { name: "golden gpc increased per shop", price: 7500000, type: G.itemType.perClick, img: "shop.jpg", modifier: 2, whichUpgrade: "Sex Toy Store" },
-    { name: "price of ching majorly decreased", price: 300000, type: G.itemType.price, img: "ching.jpg", modifier: 0.6, whichUpgrade: "Chinese Kid" },
-    { name: "golden price of ching majorly decreased", price: 15000000, type: G.itemType.price, img: "ching.jpg", modifier: 0.8, whichUpgrade: "Chinese Kid" },
-    { name: "price of hooker majorly decreased", price: 700000, type: G.itemType.price, img: "zona.jpg", modifier: 0.6, whichUpgrade: "Hooker" },
-    { name: "golden price of hooker majorly decreased", price: 35000000, type: G.itemType.price, img: "zona.jpg", modifier: 0.8, whichUpgrade: "Hooker" },
-    { name: "zini gps doubled", price: 1500000, type: G.itemType.double, img: "zini.jpg", modifier: 2, whichUpgrade: "Ben Zini" },
-    { name: "golden zini gps doubled", price: 75000000, type: G.itemType.double, img: "zini.jpg", modifier: 2, whichUpgrade: "Ben Zini" },
-    { name: "gpc increased per zini", price: 2000000, type: G.itemType.perClick, img: "zini.jpg", modifier: 2, whichUpgrade: "Ben Zini" },
-    { name: "golden gpc increased per zini", price: 100000000, type: G.itemType.perClick, img: "zini.jpg", modifier: 2, whichUpgrade: "Ben Zini" },
-    { name: "price of pimp majorly decreased", price: 3000000, type: G.itemType.price, img: "pimp.jpg", modifier: 0.6, whichUpgrade: "Pimp" },
-    { name: "golden price of pimp majorly decreased", price: 150000000, type: G.itemType.price, img: "pimp.jpg", modifier: 0.8, whichUpgrade: "Pimp" },
-    { name: "price of shop majorly decreased", price: 5000000, type: G.itemType.price, img: "shop.jpg", modifier: 0.6, whichUpgrade: "Sex Toy Store" },
-    { name: "golden price of shop majorly decreased", price: 250000000, type: G.itemType.price, img: "shop.jpg", modifier: 0.8, whichUpgrade: "Sex Toy Store" },
-    { name: "yannai gps doubled", price: 18000000, type: G.itemType.double, img: "yannai.jpg", modifier: 2, whichUpgrade: "Yannai" },
-    { name: "golden yannai gps doubled", price: 900000000, type: G.itemType.double, img: "yannai.jpg", modifier: 2, whichUpgrade: "Yannai" },
-    { name: "gpc increased per yannai", price: 19000000, type: G.itemType.perClick, img: "yannai.jpg", modifier: 2, whichUpgrade: "Yannai" },
-    { name: "golden gpc increased per yannai", price: 950000000, type: G.itemType.perClick, img: "yannai.jpg", modifier: 2, whichUpgrade: "Yannai" },
-    { name: "price of zini majorly decreased", price: 20000000, type: G.itemType.price, img: "zini.jpg", modifier: 0.6, whichUpgrade: "Ben Zini" },
-    { name: "golden price of zini majorly decreased", price: 1000000000, type: G.itemType.price, img: "zini.jpg", modifier: 0.8, whichUpgrade: "Ben Zini" },
-    { name: "yair gps doubled", price: 50000000, type: G.itemType.double, img: "yair.jpg", modifier: 2, whichUpgrade: "Yair" },
-    { name: "golden yair gps doubled", price: 2500000000, type: G.itemType.double, img: "yair.jpg", modifier: 2, whichUpgrade: "Yair" },
-    { name: "price of yannai majorly decreased", price: 100000000, type: G.itemType.price, img: "yannai.jpg", modifier: 0.6, whichUpgrade: "Yannai" },
-    { name: "golden price of yannai majorly decreased", price: 5000000000, type: G.itemType.price, img: "yannai.jpg", modifier: 0.8, whichUpgrade: "Yannai" },
-    { name: "price of yair majorly decreased", price: 200000000, type: G.itemType.price, img: "yair.jpg", modifier: 0.6, whichUpgrade: "Yair" },
-    { name: "golden price of yair majorly decreased", price: 10000000000, type: G.itemType.price, img: "yair.jpg", modifier: 0.8, whichUpgrade: "Yair" },
-  ].sort((a, b) => a.price - b.price);
+  G.defaultUpgrades = [
+    { name: "Chinese Kid", price: 15, amount: 0, gpm: 0.5, img: "ching.jpg" },
+    { name: "Hooker", price: 120, amount: 0, gpm: 5, img: "zona.jpg" },
+    { name: "Pimp", price: 1500, amount: 0, gpm: 40, img: "pimp.jpg" },
+    { name: "Sex Toy Store", price: 18000, amount: 0, gpm: 450, img: "shop.jpg" },
+    { name: "Ben Zini", price: 220000, amount: 0, gpm: 3250, img: "zini.jpg" },
+    { name: "Yannai", price: 2500000, amount: 0, gpm: 55000, img: "yannai.jpg" },
+    { name: "Yair", price: 30000000, amount: 0, gpm: 400000, img: "yair.jpg" },
+  ];
+
+  const additionalUpgrades = [
+    { name: "Amber Echo", price: 330000000, amount: 0, gpm: 950000, img: "placeholder.jpg" },
+    { name: "Lunar Flux", price: 4000000000, amount: 0, gpm: 4200000, img: "placeholder.jpg" },
+    { name: "Crimson Drift", price: 48000000000, amount: 0, gpm: 19000000, img: "placeholder.jpg" },
+    { name: "Neon Cascade", price: 520000000000, amount: 0, gpm: 85000000, img: "placeholder.jpg" },
+    { name: "Velvet Pulse", price: 6200000000000, amount: 0, gpm: 360000000, img: "placeholder.jpg" },
+    { name: "Solar Glitch", price: 75000000000000, amount: 0, gpm: 1500000000, img: "placeholder.jpg" },
+    { name: "Obsidian Spiral", price: 920000000000000, amount: 0, gpm: 6600000000, img: "placeholder.jpg" },
+    { name: "Emerald Orbit", price: 11000000000000000, amount: 0, gpm: 32000000000, img: "placeholder.jpg" },
+    { name: "Sapphire Surge", price: 130000000000000000, amount: 0, gpm: 150000000000, img: "placeholder.jpg" },
+    { name: "Iron Whisper", price: 1500000000000000000, amount: 0, gpm: 750000000000, img: "placeholder.jpg" },
+  ];
+
+  G.defaultUpgrades = G.defaultUpgrades.concat(additionalUpgrades);
+
+  G.generateItemsForUpgrade = function (upgrade) {
+    const items = [];
+    const doublerMultipliers = [2, 2.5, 3, 4, 5];
+    const doublerPriceFactors = [10, 250, 6250, 156250, 3906250];
+    const boosterMultipliers = [5, 7.5, 10, 15, 20];
+    const boosterPriceFactors = [10, 250, 6250, 156250, 3906250];
+
+    doublerMultipliers.forEach((modifier, index) => {
+      items.push(
+        new G.Item(
+          `${upgrade.name} Doubler ${index + 1}`,
+          Math.ceil(upgrade.price * doublerPriceFactors[index]),
+          G.itemType.double,
+          "placeholder.jpg",
+          modifier,
+          upgrade.name
+        )
+      );
+    });
+
+    return items;
+  };
+
+  G.defaultItems = [];
+  G.defaultUpgrades.forEach((upgrade) => {
+    G.defaultItems.push(...G.generateItemsForUpgrade(upgrade));
+  });
+
+  G.defaultItems.push(
+    new G.Item(
+      "Augmentation Array",
+      2500,
+      G.itemType.perUpgrade,
+      "placeholder.jpg",
+      1,
+      ""
+    )
+  );
+
+  const gpmToClickCosts = [
+    60000,
+    1500000,
+    37500000,
+    937500000,
+    23437500000,
+    585937500000,
+    14648437500000,
+    366210937500000,
+    9155273437500000,
+    228881835937500000,
+  ];
+  gpmToClickCosts.forEach((price, index) => {
+    G.defaultItems.push(
+      new G.Item(
+        `Kinetic Feedback ${index + 1}`,
+        price,
+        G.itemType.gpmToClick,
+        "placeholder.jpg",
+        0.01,
+        ""
+      )
+    );
+  });
+
+  G.defaultItems.sort((a, b) => a.price - b.price);
 })(Game);

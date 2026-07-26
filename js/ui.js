@@ -3,7 +3,12 @@
 
   G.ui.elements = {
     gps: document.querySelector(".gps"),
+    clickValueDisplay: document.querySelector(".click-value-number"),
+    rebirthCount: document.querySelector(".rebirth-count"),
+    rebirthButton: document.querySelector(".rebirth-button"),
+    nextRebirthValue: document.querySelector(".next-rebirth-value"),
     upgradeContainer: document.querySelector(".js-upgrades"),
+    rebirthContainer: document.querySelector(".js-rebirth"),
     itemContainer: document.querySelector(".js-items"),
     countDisplay: document.querySelector(".points"),
     eggplantButton: document.querySelector(".eggplantButton"),
@@ -31,8 +36,16 @@
   };
 
   G.ui.updateItemButtons = function () {
+    if (!G.ui.elements.itemContainer) return;
     let html = "";
-    const visibleItems = G.items.filter((item) => !G.boughtItems.some((b) => b.name === item.name));
+    const maxCost = Math.max(100, G.stats.highestEver * 10);
+    const visibleItems = G.items
+      .filter(
+        (item) =>
+          !G.boughtItems.some((b) => b.name === item.name) &&
+          item.price <= maxCost
+      )
+      .sort((a, b) => a.price - b.price);
 
     visibleItems.forEach((item, displayIndex) => {
       const actualIndex = G.items.indexOf(item);
@@ -57,16 +70,26 @@
 
     G.ui.elements.itemContainer.querySelectorAll(".item").forEach((button) => {
       const tooltip = button.querySelector(".item-tooltip");
-      
-      // Update tooltip price color on hover
+      if (!tooltip) return;
+
       button.addEventListener("mouseenter", () => {
         const idx = Number(button.dataset.index);
         const chosen = G.items[idx];
+        if (!chosen) return;
         const canAfford = G.stats.Ejaculations >= chosen.price;
         const priceElement = tooltip.querySelector(".tooltip-price");
         if (priceElement) {
           priceElement.style.color = canAfford ? "#4CAF50" : "#FF6B6B";
         }
+
+        const rect = button.getBoundingClientRect();
+        tooltip.style.left = `${rect.left + rect.width / 2}px`;
+        tooltip.style.top = `${rect.top}px`;
+        tooltip.classList.add("visible");
+      });
+
+      button.addEventListener("mouseleave", () => {
+        tooltip.classList.remove("visible");
       });
 
       button.addEventListener("click", () => {
@@ -90,6 +113,7 @@
   };
 
   G.ui.updateUpgradeButtons = function () {
+    if (!G.ui.elements.upgradeContainer) return;
     let html = "";
     G.upgrades.forEach((upgrade, index) => {
       html += `
@@ -117,15 +141,6 @@
           upgrade.amount++;
           upgrade.price = Math.floor(upgrade.price * 1.1);
 
-          G.boughtItems.forEach((it) => {
-            if (
-              it.type === G.itemType.perClick &&
-              it.whichUpgrade === upgrade.name
-            ) {
-              G.stats.goons_per_click += it.modifier;
-            }
-          });
-
           G.ui.updateGlobalInfo();
           G.ui.isEnough();
           G.storage.saveState();
@@ -141,9 +156,126 @@
     G.ui.updateCount();
   };
 
+  G.ui.updateRebirthButtons = function () {
+    if (!G.ui.elements.rebirthContainer) return;
+
+    let html = "";
+    G.rebirthUpgrades.forEach((rebirth, index) => {
+      const canAfford = G.stats.rebirthPoints >= rebirth.price;
+      html += `
+        <button class="upgrade ${canAfford ? "" : "disabled"}" data-rebirth-index="${index}">
+          <div class="upgrade-info">
+            <span class="upgrade-title">${rebirth.name}</span>
+            <span class="upgrade-cost">Cost: ${G.ui.formatNumber(rebirth.price)} RP</span>
+            <span class="upgrade-GPM">Owned: ${rebirth.amount}</span>
+            <span class="upgrade-description">${rebirth.description || "Permanent bonus for future runs."}</span>
+          </div>
+          <p class="upgrade-count">x${rebirth.effect}</p>
+        </button>`;
+    });
+
+    G.ui.elements.rebirthContainer.innerHTML = html;
+
+    G.ui.elements.rebirthContainer.querySelectorAll(".upgrade").forEach((button) => {
+      const index = Number(button.dataset.rebirthIndex);
+      button.addEventListener("click", () => {
+        const rebirth = G.rebirthUpgrades[index];
+        if (!rebirth) return;
+
+        if (G.stats.rebirthPoints >= rebirth.price) {
+          G.stats.rebirthPoints -= rebirth.price;
+          rebirth.amount++;
+          G.ui.updateCount();
+          G.ui.updateRebirthButtons();
+          G.storage.saveState();
+        } else {
+          button.classList.add("upgrade-denied");
+          setTimeout(() => button.classList.remove("upgrade-denied"), 1000);
+        }
+      });
+    });
+  };
+
+  G.ui.performRebirth = function () {
+    const available = G.getRebirthPoints();
+    const earned = Math.max(0, available - G.stats.rebirthPointsTotal);
+    if (earned <= 0) return;
+
+    G.stats.rebirthPoints += earned;
+    G.stats.rebirthPointsTotal += earned;
+    G.stats.totalRebirths += 1;
+
+    const keepHighest = G.stats.highestEver;
+    const keepRebirthPoints = G.stats.rebirthPoints;
+    const keepTotalRebirths = G.stats.totalRebirths;
+    const keepRebirthPointsTotal = G.stats.rebirthPointsTotal;
+
+    G.stats = {
+      ...G.defaultStats,
+      highestEver: keepHighest,
+      rebirthPoints: keepRebirthPoints,
+      totalRebirths: keepTotalRebirths,
+      rebirthPointsTotal: keepRebirthPointsTotal,
+    };
+
+    G.upgrades.length = 0;
+    G.defaultUpgrades.forEach((u) => G.upgrades.push({ ...u }));
+
+    G.boughtItems.length = 0;
+    G.items.length = 0;
+    G.defaultItems.forEach((itemData) =>
+      G.items.push(
+        new G.Item(
+          itemData.name,
+          itemData.price,
+          itemData.type,
+          itemData.img,
+          itemData.modifier,
+          itemData.whichUpgrade
+        )
+      )
+    );
+
+    G.global_gpm = G.getGlobalGPM();
+    G.ui.updateGlobalInfo();
+    G.ui.updateUpgradeButtons();
+    G.ui.updateItemButtons();
+    G.ui.updateCount();
+    G.storage.saveState();
+  };
+
   G.ui.updateCount = function () {
-    G.ui.elements.countDisplay.innerText = `${G.ui.formatNumber(G.stats.Ejaculations)}`;
-    G.ui.elements.gps.innerText = `EPS: ${G.ui.formatNumber(G.global_gpm)}`;
+    if (G.stats.Ejaculations > G.stats.highestEver) {
+      G.stats.highestEver = G.stats.Ejaculations;
+    }
+
+    if (G.ui.elements.countDisplay) {
+      G.ui.elements.countDisplay.innerText = `${G.ui.formatNumber(G.stats.Ejaculations)}`;
+    }
+    if (G.ui.elements.gps) {
+      G.ui.elements.gps.innerText = `EPS: ${G.ui.formatNumber(G.global_gpm)}`;
+    }
+    if (G.ui.elements.clickValueDisplay) {
+      G.ui.elements.clickValueDisplay.innerText = `${G.ui.formatNumber(G.getClickValue())}`;
+    }
+    if (G.ui.elements.rebirthCount) {
+      G.ui.elements.rebirthCount.innerText = `${G.ui.formatNumber(G.stats.rebirthPoints)}`;
+    }
+    if (G.ui.elements.nextRebirthValue) {
+      const nextThreshold = Math.pow(G.stats.rebirthPointsTotal + 1, 2) * 100000;
+      G.ui.elements.nextRebirthValue.innerText = `${G.ui.formatNumber(nextThreshold)}`;
+    }
+    if (G.ui.elements.rebirthButton) {
+      const nextPoints = G.getRebirthPoints();
+      const earnedPoints = Math.max(0, nextPoints - G.stats.rebirthPointsTotal);
+      G.ui.elements.rebirthButton.disabled = earnedPoints <= 0;
+    }
+    if (G.ui.elements.rebirthContainer) {
+      G.ui.updateRebirthButtons();
+    }
+    if (G.ui.elements.itemContainer) {
+      G.ui.updateItemButtons();
+    }
     G.storage.saveState();
   };
 

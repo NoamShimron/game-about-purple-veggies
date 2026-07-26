@@ -5,6 +5,7 @@
     G.stats = saved.stats;
     G.upgrades = saved.upgrades;
     G.boughtItems = saved.boughtItems || [];
+    G.rebirthUpgrades = saved.rebirthUpgrades || G.defaultRebirthUpgrades.map((u) => ({ ...u }));
 
     G.items = [];
     G.defaultItems.forEach((it) => {
@@ -24,6 +25,7 @@
   } else {
     G.stats = { ...G.defaultStats };
     G.upgrades = G.defaultUpgrades.map((u) => ({ ...u }));
+    G.rebirthUpgrades = G.defaultRebirthUpgrades.map((u) => ({ ...u }));
     G.boughtItems = [];
     G.items = G.defaultItems.map(
       (it) =>
@@ -46,6 +48,7 @@
   G.global_gpm = G.getGlobalGPM();
 
   G.ui.updateUpgradeButtons();
+  G.ui.updateRebirthButtons();
   G.ui.updateItemButtons();
   G.ui.isEnough();
 
@@ -60,18 +63,24 @@
     });
 
     eggplantBtn.addEventListener("click", () => {
-      G.stats.Ejaculations += G.stats.goons_per_click;
+      G.stats.Ejaculations += G.getClickValue();
       G.ui.updateCount();
       G.ui.changeImage("download-clicked.jpg");
       setTimeout(() => G.ui.changeImage("download-good.jpg"), 150);
     });
   }
 
-  G.ui.elements.resetButton.addEventListener("click", () => G.ui.resetGame());
+  if (G.ui.elements.rebirthButton) {
+    G.ui.elements.rebirthButton.addEventListener("click", () => G.ui.performRebirth());
+  }
+
+  if (G.ui.elements.resetButton) {
+    G.ui.elements.resetButton.addEventListener("click", () => G.ui.resetGame());
+  }
 
   setInterval(() => {
     if (G.global_gpm > 0) {
-      G.stats.Ejaculations = Math.round((G.stats.Ejaculations + G.global_gpm / 10) * 100) / 100;
+      G.stats.Ejaculations = Math.round((G.stats.Ejaculations + G.global_gpm / 20) * 100) / 100;
       G.ui.updateCount();
     }
   }, 100);
