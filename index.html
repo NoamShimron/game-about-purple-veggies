@@ -2,7 +2,8 @@
 <html>
   <head>
   <title>Eggplant Clicker</title>
-  <style>
+ <style>
+    
     body {
       font-family: Arial, sans-serif;
       background-color: #2b2b2b;
@@ -31,6 +32,7 @@
       left: 0;
       z-index: 1000; /* Space for the header */
     }
+    
 
     .header-txt {
       flex-grow: 1; /* Center the text */
@@ -95,13 +97,81 @@
     .eggplant:active {
       transform: scale(0.9); /* Shrink slightly when clicked */
     }
+    .items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Grid layout with responsive columns */
+    gap: 20px; /* Space between items */
+    margin-top: 30px;
+    margin-left: 350px;
+    text-align: center;
+    max-width: 520px; /* Maximum width to fit five items at 100px each with gaps */
+    }
 
+    .item {
+      background-color: #555;
+      text-align: center;
+      color: #fff;
+      border: 1px solid #777;
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      transition: background-color 0.2s;
+      position: relative; /* For positioning the text box */
+    }
+    .item:hover {
+      background-color: #666;
+    }
+
+    .item img {
+      width: 80%;
+      height: 80%;
+      object-fit: contain;
+    }
+
+    .item-title,
+    .item-cost {
+      display: none; /* Hide text by default */
+    }
+
+    .item:hover .item-title{
+      display: block; /* Show text on hover */
+      position: absolute; /* Position relative to the .item */
+      top: -10px; /* Position the textbox above the item */
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 5px;
+      white-space: nowrap; /* Prevent text wrapping */
+      z-index: 10; /* Ensure it appears above other elements */
+      font-size: 14px; /* Adjust font size for better readability */
+    }
+    .item:hover .item-cost {
+      display: block; /* Show text on hover */
+      position: absolute; /* Position relative to the .item */
+      top: -30px; /* Position the textbox above the item */
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 5px;
+      white-space: nowrap; /* Prevent text wrapping */
+      z-index: 10; /* Ensure it appears above other elements */
+      font-size: 14px; /* Adjust font size for better readability */
+    }
     /* Upgrades section styling */
     .upgrades {
       margin-top: 30px;
-      margin-left: 300px;
+      margin-left: 30px;
       align-self: right;
       text-align: left;
+      min-width: 300px;
     }
 
     .upgrade {
@@ -157,6 +227,7 @@
        /* Full viewport height */
        /* Space for the header */
     }
+    
     .gps{
       display: flex;
       justify-content: center;
@@ -169,7 +240,7 @@
       background-color: #333333; /* Grey color for disabled text */
       cursor: not-allowed; /* Change cursor to indicate disabled state */
     }
-    </style>
+    </style> 
       
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -183,26 +254,26 @@
   </div>
   <div class="insides">
     <!-- Counter Section -->
-  <div class="counter-container">
-    <div class="counter">
-      Juicings: <span class="points">0</span>
-      
+    <div class="counter-container">
+      <div class="counter">
+        Ejaculations: <span class="points">0</span>
+        
+      </div>
+      <div class="gpsdiv">
+      <p class="gps">Ejaculations per second:</p></div>
+      <!-- Eggplant Button Section -->
+      <div class="eggplant-container">
+        <button class="eggplantButton" id="eggplantButton">
+          <img class="eggplant" src="download-good.jpg" draggable="false" alt="Eggplant">
+        </button>
+      </div>
     </div>
-    <div class="gpsdiv">
-    <p class="gps">Juicings per second:</p></div>
-    <!-- Eggplant Button Section -->
-    <div class="eggplant-container">
-      <button class="eggplantButton" id="eggplantButton">
-        <img class="eggplant" src="download-good.jpg" draggable="false" alt="Eggplant">
-      </button>
-    </div>
-  </div>
-    <div class="items">
+    <div class="items js-items">
 
     </div>
 
     <!-- Upgrades Section -->
-    <div class="upgrades">
+    <div class="upgrades js-upgrades">
       
       
     </div>
