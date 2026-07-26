@@ -198,11 +198,12 @@
 
   G.ui.performRebirth = function () {
     const available = G.getRebirthPoints();
-    const earned = Math.max(0, available - G.stats.rebirthPointsTotal);
+    const total = G.stats.rebirthPointsTotal || 0;
+    const earned = Math.max(0, available - total);
     if (earned <= 0) return;
 
-    G.stats.rebirthPoints += earned;
-    G.stats.rebirthPointsTotal += earned;
+    G.stats.rebirthPoints = (G.stats.rebirthPoints || 0) + earned;
+    G.stats.rebirthPointsTotal = total + earned;
     G.stats.totalRebirths += 1;
 
     const keepHighest = G.stats.highestEver;
@@ -262,12 +263,13 @@
       G.ui.elements.rebirthCount.innerText = `${G.ui.formatNumber(G.stats.rebirthPoints)}`;
     }
     if (G.ui.elements.nextRebirthValue) {
-      const nextThreshold = Math.pow(G.stats.rebirthPointsTotal + 1, 2) * 100000;
+      const total = G.stats.rebirthPointsTotal || 0;
+      const nextThreshold = Math.pow(total + 1, 2) * 100000;
       G.ui.elements.nextRebirthValue.innerText = `${G.ui.formatNumber(nextThreshold)}`;
     }
     if (G.ui.elements.rebirthButton) {
       const nextPoints = G.getRebirthPoints();
-      const earnedPoints = Math.max(0, nextPoints - G.stats.rebirthPointsTotal);
+      const earnedPoints = Math.max(0, nextPoints - (G.stats.rebirthPointsTotal || 0));
       G.ui.elements.rebirthButton.disabled = earnedPoints <= 0;
     }
     if (G.ui.elements.rebirthContainer) {
@@ -280,6 +282,7 @@
   };
 
   G.ui.isEnough = function () {
+    if (!G.ui.elements.upgradeContainer) return;
     G.upgrades.forEach((upgrade, idx) => {
       const button = G.ui.elements.upgradeContainer.querySelector(
         `.upgrade[data-index="${idx}"]`

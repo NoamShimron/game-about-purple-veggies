@@ -2,10 +2,14 @@
   const saved = G.storage.loadState();
 
   if (saved && saved.stats && saved.upgrades) {
-    G.stats = saved.stats;
-    G.upgrades = saved.upgrades;
+    G.stats = Object.assign({}, G.defaultStats, saved.stats);
+    G.upgrades = saved.upgrades.map((u) => ({ ...u }));
     G.boughtItems = saved.boughtItems || [];
-    G.rebirthUpgrades = saved.rebirthUpgrades || G.defaultRebirthUpgrades.map((u) => ({ ...u }));
+    G.rebirthUpgrades = (saved.rebirthUpgrades || G.defaultRebirthUpgrades).map((u) => ({ ...u }));
+
+    if (G.stats.rebirthPoints == null) G.stats.rebirthPoints = 0;
+    if (G.stats.rebirthPointsTotal == null) G.stats.rebirthPointsTotal = 0;
+    if (G.stats.totalRebirths == null) G.stats.totalRebirths = 0;
 
     G.items = [];
     G.defaultItems.forEach((it) => {
