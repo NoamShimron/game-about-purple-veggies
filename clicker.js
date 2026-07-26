@@ -237,9 +237,9 @@ function updateUpgradeButtons() {
 }
 
 setInterval(()=>{
-  addEjaculations(global_gpm)
+  addEjaculations(global_gpm/10)
   updateCount()
-},1000);
+},100);
 
 function updateCount() {
   countDisplay.innerText = `${Math.round(stats.Ejaculations)} `;
